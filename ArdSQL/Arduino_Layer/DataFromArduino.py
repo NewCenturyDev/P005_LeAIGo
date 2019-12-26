@@ -17,6 +17,7 @@ def ArduinoDATA():
         #Adapt bigger DATA or meaningful DATA
         trans.write(code)
     else:
+        trans.close()
         return 0
 while(True):
     ArduinoDATA()
