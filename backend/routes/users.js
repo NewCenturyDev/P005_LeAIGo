@@ -63,7 +63,7 @@ router.post('/login', function(req, res){
 
   //DB에서 회원정보 읽어와서 사용자가 입력한 내용과 대조
   connection.query(sql, function(err, rows){
-     if(err){
+    if(err){
       console.log(err);
     }
     else {
@@ -72,8 +72,7 @@ router.post('/login', function(req, res){
           //세션 생성
           req.session.user = {
             "id" : rows[i].id,
-            "nick" : rows[i].nick,
-            "name" : rows[i].name
+            "nick" : rows[i].nick
           }
           console.log('로그인 처리 - 세션 저장');
           res.json({
