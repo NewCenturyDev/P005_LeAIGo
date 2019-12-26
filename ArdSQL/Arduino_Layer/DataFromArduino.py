@@ -6,7 +6,7 @@ except:
     print("Can't find PORT!!")
     exit()
 
-path='/Users/mac/Desktop/testDATA.txt'
+path='./testDATA.txt'
 
 def ArduinoDATA():
     if ARD.readable():
