@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <form id="loginForm">
+        <input id="login_id" name="user" type="text" placeholder="아이디"></input>
+        <input id="login_pw" name="password" type="password" placeholder="비밀번호"></input>
+        <button onclick="login()">로그인</button>
+    </form>
+    <form id="registerForm">
+        <input id="register_id" type="text" placeholder="아이디"></input>
+        <input id="register_nick" type="text" placeholder="닉네임"></input>
+        <input id="register_pw" type="password" placeholder="비밀번호"></input>
+        <input id="register_pwck" type="password" placeholder="비밀번호 확인"></input>
+        <button onclick="register()">회원가입</button>
+    </form>
+    <form id="writeForm">
+        <input id="write_title" name="title" type="text" placeholder="제목"></input>
+        <textarea id="write_text" name="text" placeholder="내용"></textarea>
+        <input id="write_tag" name="tag" type="taxt" placeholder="태그(5개 제한, 쉼표로 구분)"></input>
+        <!-- 모달창 열기 버튼 - 파일 첨부-->
+        <button onclick="openFile()">파일 첨부</button>
+        <button onclick="write()">게시물 작성</button>
+    </form>
+    <form id="aiReqHiddenForm">
+        <input id="aireq_task"></input>
+    </form>
+    <form id="aiResHiddenForm">
+        <input id="aires_id"></input>
+    </form>
+</html>
+<script>
+//로그인 여부 확인
+function () {
+    this.$http.get('/users/check')
+    .then((res) => {
+        if(res.data.islogin != true){
+            alert("로그인한 사용자만 이용할 수 있는 기능입니다.");
+            this.$router.push('/');
+        }
+    })
+    .catch(function (err) {
+        alert(err);
+    })
+},
+
+//로그인
+function () {
+    let self = this;
+    let user = {
+        userid: login_id,
+        userpw: login_pw
+    }
+    this.$http.post('/users/login',{
+        user: this.user
+    })
+    .then((res) => {
+        if(res.data.success == 1){
+            alert(res.data.message);
+            self.clear();
+            this.$router.push('/lists');
+        }
+        else{
+            alert(res.data.message);
+            self.clear();
+            this.$router.push('/auth');
+        }
+    })
+    .catch(function (err) {
+        self.clear();
+        alert(err);
+    })
+}
+
+//회원가입
+function () {
+    let self = this;
+    let user = {
+        userid: register_id,
+        userpw: register_pw,
+        userpwck: register_pwck,
+        nick: register_nick
+    }
+    this.$http.post('/users/signup',{
+        user: this.user
+    })
+    .then((res) => {
+        if(res.data.success == 1){
+            alert(res.data.message);
+            self.clear();
+            this.$router.push('/auth');
+        }
+        else{
+            alert(res.data.message);
+            this.$router.push('/auth/register');
+        }
+    })
+    .catch(function (err) {
+        alert(err);
+    })
+}
+
+//게시물 작성
+function () {
+    let self = this;
+    this.$http.post('/feed/write', {
+        title: this.feed.title,
+        text: this.feed.text,
+        tag: this.feed.tag,
+        type: 0
+    })
+    .then((res) => {
+        if(res.data.success == 1){
+            alert(res.data.message);
+            this.$router.push('/lists');
+        }
+        else{
+            alert(res.data.message);
+            self.files = null;
+        }
+    })
+    .catch(function (err){
+        alert(err);
+    });
+}
+</script>
