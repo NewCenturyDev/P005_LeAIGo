@@ -44,13 +44,13 @@ void loop() {
   sound_value=analogRead(sound);
   if(sound_value>0){
     sound_value=1;
-    Serial.print("Layer2 : ");
+    Serial.print("Layer2:");
     Serial.print(sound_value);
     checkLayer=1;
   }
 
   if(checkLayer==0){
-    Serial.print("Layer2 : ");
+    Serial.print("Layer2:");
     Serial.print("0");
   }
       
@@ -72,12 +72,12 @@ void loop() {
   checkDistance = check / 29.0 / 2.0;
   if(checkDistance > 0){
     checkDistance=1;
-    Serial.print(" Layer 3 : ");
+    Serial.print(" Layer3:");
     Serial.println(int(checkDistance));
     checkLayer=1;
   }
   if(checkLayer==0){
-    Serial.print(" Layer 3 : ");
+    Serial.print(" Layer3:");
     Serial.println("0");
   }
   delay(1000);

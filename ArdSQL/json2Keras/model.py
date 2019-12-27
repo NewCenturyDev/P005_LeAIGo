@@ -65,34 +65,47 @@ class ModelData :
 
         # init model
         self.model = Sequential()
+        self.baked_layersourcecode = []
 
-        print(self.parsed_layerdata.items())
-        for index, layer in enumerate(self.parsed_layerdata.items()) :
+        print(self.parsed_layerdata)
+        for index, layer in enumerate(self.parsed_layerdata) :
             print(index, layer)
             if (layer[0] == 'conv2d') :
                 if (index == 0) :
                     self.model.add(Conv2D(layer[1],
-                                          activation=list(self.parsed_layerdata.items())[index + 1][0],
+                                          activation=self.parsed_layerdata[index + 1][0],
                                           kernel_size=(3, 3), strides=(1, 1), padding='same',
                                           input_shape=self.input2Ddata_shape))
+                    self.baked_layersourcecode.append("model.add(Conv2D("+str(layer[1])+
+                                                      ", activation="+str(self.parsed_layerdata[index + 1][0])+
+                                                      ",kernel_size=(3, 3), strides=(1, 1), padding=\'same\', input_shape="
+                                                      +str(self.input2Ddata_shape)+"))")
+
                 else :
                     self.model.add(Conv2D(layer[1],
-                                          activation=list(self.parsed_layerdata.items())[index + 1][0],
+                                          activation=self.parsed_layerdata[index + 1][0],
                                           kernel_size=(3, 3), strides=(1, 1), padding='same'))
-
+                    self.baked_layersourcecode.append("model.add(Conv2D("+str(layer[1])+
+                                                      ", activation="+str(self.parsed_layerdata[index + 1][0])+
+                                                      ",kernel_size=(3, 3), strides=(1, 1), padding=\'same\'))")
 
             elif (layer[0] == 'maxpooling2d') :
                 self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(1, 1)))
+                self.baked_layersourcecode.append("model.add(MaxPooling2D(pool_size=(2, 2), strides=(1, 1))")
+
 
             elif (layer[0] == 'flatten') :
                 self.model.add(Flatten())
+                self.baked_layersourcecode.append("model.add(Flatten())")
 
             elif (layer[0] == 'dense') :
                 self.model.add(Dense(layer[1],
-                                     activation=list(self.parsed_layerdata.items())[index+1][0]))
+                                     activation=self.parsed_layerdata[index+1][0]))
+                self.baked_layersourcecode.append("model.add(Dense("+str(layer[1])+", activation="+str(self.parsed_layerdata[index+1][0])+")")
 
             elif (layer[0] == 'dropout') :
                 self.model.add(Dropout(0.5))
+                self.baked_layersourcecode.append("model.add(Dropout(0.5))")
 
             else :
                 pass

@@ -1,11 +1,1 @@
-Mnist
-Conv2d 32
-Relu
-Conv2d 64
-Relu
-Maxpooling2d
-Flatten
-Dense 128
-Relu
-Dense 10
-Softmax
+Mnist Conv2d 32 Relu Conv2d 64 Relu Maxpooling2d Flatten Dense 128 Relu Dense 10 Softmax

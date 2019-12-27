@@ -5,7 +5,6 @@ filename = 'sampledata'
 kind_of_practice_dataset = ['Mnist']
 
 
-
 img_rows = 28
 img_cols = 28
 
