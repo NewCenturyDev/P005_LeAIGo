@@ -30,35 +30,34 @@ connection.query('USE hacker', function(err){
 /* --------------------------------------------------------------------------- */
 
 /* ------------------------ 인공지능 처리상태 리스트 갱신 기능 ------------------------ */
-router.post('/list', function(req, res){
+router.get('/list', function(req, res){
     var user = req.session.user;
     var sql = 'SELECT * FROM ai WHERE ai_user = ?';
-    var params = [user.nick]
-
-    while(rows[0] == null){
-        connection.query(sql, params, function(rows, err){
-            if(err){
-                console.log('AI 요청 큐 조회 실패 - ', err);
-                res.json({
-                    success: 0,
-                    message: 'DB 오류'
-                });
-            }
-            else{
-                res.json(rows);
-            }
-        })
-    }
+    var params = ['test']
+    connection.query(sql, params, function(err, rows){
+        if(err){
+            console.log('AI 요청 큐 조회 실패 - ', err);
+            res.json({
+                success: 0,
+                message: 'DB 오류'
+            });
+        }
+        else{
+            res.json(rows);
+        }
+    });
 });
 /* ----------------------- 인공지능 처리상태 리스트 갱신 기능 끝 ----------------------- */
 
 /* ------------------------ 인공지능 처리명령 Request 기능 ------------------------ */
 router.post('/request', function(req, res){
-    var user = req.session.user;
-    var task = req.body.task;
+    //var user = req.session.user;
+    var task = req.body.request.task;
+    var isTest = req.body.request.isTest;
+    var isArdu = req.body.request.isArdu;
     var status = 'wait';
-    var sql = 'INSERT INTO ai (ai_user, ai_task, ai_status) VALUES(?, ?, ?)';
-    var params = [user.nick, task, status];
+    var sql = 'INSERT INTO ai (ai_user, ai_istest, ai_isArdu, ai_task, ai_status) VALUES(?, ?, ?, ?, ?)';
+    var params = ['test', isTest, isArdu, task, status];
 
     connection.query(sql, params, function(err){
         if(err){
@@ -85,7 +84,7 @@ router.post('/response', function(req, res){
     var sql = 'SELECT * FROM ai WHERE ai_id = ? AND ai_user = ?';
     var params = [user.nick, taskid];
 
-    connection.query(sql, params, function(rows, err){
+    connection.query(sql, params, function(err, rows){
         if(err){
             console.log('AI 처리 결과 조회 실패 - ', err);
             res.json({
