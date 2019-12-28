@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>:: Luna Board ::</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+    <style>
+        #model {
+            position: relative;
+        }
+        .block {
+            position: absolute;
+            width: 150px; 
+            height: 50px;
+            left: 50%;
+            margin-left: -75px;
+            top: 500px;
+            transition: 0.4s ease;
+            z-index: 1;
+        }
+        .block:hover {
+            filter: brightness(0.8);
+        }
+        .diamond {
+            transform: rotateX(64deg);
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            margin-left: -200px;
+            z-index: 0
+        }
+        .diamond>div {
+            position: relative;
+            transform: rotate(45deg);
+            background-color: #ddd;
+            margin: 0 auto;
+            width: 400px;
+            height: 400px;
+        }
+        .diamond1 {
+            position: relative;
+            background-color: #eee;
+            -webkit-clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+                    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            margin: 0 auto;
+            text-align: center;
+            padding: 2rem;
+            width: 100%;
+            height: 100%;
+        }
+        .diamond2 {
+            position: relative;
+            transform: skewY(23deg);
+            position: absolute;
+            top: 48px;
+            background-color: #eee;
+            margin: 0 auto;
+            text-align: center;
+            width: 75px;
+            height: 60px;
+            color: #fff;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .diamond3 {
+            position: relative;
+            transform: skewY(-23deg);
+            position: absolute;
+            top: 48px;
+            left: 75px;
+            background-color: #eee;
+            margin: 0 auto;
+            text-align: center;
+            width: 75px;
+            height: 60px;
+            font-size: 18px;
+            color: #333;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .block>.diamond1>div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #FFF;
+          -webkit-clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+                  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+          margin: 0 auto;
+          text-align: center;
+          padding: 2rem;
+            
+          width: 150px;
+          height: 50px;
+          transform: scale( 0.6 );
+        }
+        
+        .dense>div {background-color: #23d160;}
+        .lstm>div {background-color: #23d160;}
+        .conv2d>div {background-color: #23d160;}
+        .maxpooling2d>div {background-color: #23d160;}
+        .dropout>div {background-color: #23d160;}
+        .embedding>div {background-color: #23d160;}
+        .relu>div {background-color: #23d160;}
+        .tanh>div {background-color: #23d160;}
+        .sigmoid>div {background-color: #23d160;}
+        .softmax>div {background-color: #23d160;}
+        .flatten>div {background-color: #23d160;}
+        
+        #output {
+            width: 600px; height: 200px;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            margin-left: -300px;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hero is-fullheight-with-navbar is-primary is-bold">
+        <div class="hero-body">
+            <div class="columns" style="width: 100%; height: 100%;">
+                <div class="column is-8">
+                   <div class="tile is-parent is-vertical">
+                        <div class="buttons are-small" style="position: relative; margin: 0">
+                          <button id="save" class="button">저장</button>
+                          <button class="button">불러오기</button>
+                          <button class="button">내보내기</button>
+                          <button id="run" class="button">실행</button>
+                        </div>
+                        <article class="tile is-child notification" style="color: #FFF; padding: 15px 15px; ">
+                            <div class="select">
+                              <select id="info_opti">
+                                <option>옵티마이저 선택</option>
+                                <option>SGD</option>
+                                <option>ADAM</option>
+                                <option>RMSprop</option>
+                              </select>
+                            </div>
+                            <div class="select">
+                              <select id="info_loss">
+                                <option>손실 함수 선택</option>
+                                <option>binary crossentropy</option>
+                              </select>
+                            </div>
+                            <input id="info_lr" class="input is-primary" type="text" style="width: 200px" placeholder="학습률">
+                            <input id="info_mom" class="input is-primary" type="text" style="width: 200px" placeholder="momentum">
+                            <input id="info_dec" class="input is-primary" type="text" style="width: 200px" placeholder="decay">
+                        </article>
+                    </div>
+                    <div id="model" style="width: 100%; height: 100%;">
+                        <div id="output">
+                            <div class="diamond"><div></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-4">
+                    <div class="tile is-ancestor">
+                        <div class="tile is-parent is-vertical">
+                            <article class="tile is-child notification" style="color: #FFF; padding: 15px 15px;">
+                                <button class="button is-fullwidth is-success is-outlined" style="margin: 2px 0px" id="dense">Dense</button>
+                                <button class="button is-fullwidth is-success is-outlined" style="margin: 2px 0px" id="lstm">LSTM</button>
+                                <button class="button is-fullwidth is-success is-outlined" style="margin: 2px 0px" id="conv2d">Conv2D</button>
+                                <button class="button is-fullwidth is-success is-outlined" style="margin: 2px 0px" id="maxpooling2d">MaxPooling2D</button>
+                                <button class="button is-fullwidth is-success is-outlined" style="margin: 2px 0px" id="dropout">DropOut</button>
+                                <button class="button is-fullwidth is-success is-outlined" style="margin: 2px 0px" id="embedding">Embedding</button>
+                                <button class="button is-fullwidth is-danger is-outlined" style="margin: 2px 0px" id="relu">ReLU</button>
+                                <button class="button is-fullwidth is-danger is-outlined" style="margin: 2px 0px" id="tanh">Tanh</button>
+                                <button class="button is-fullwidth is-danger is-outlined" style="margin: 2px 0px" id="sigmoid">Sigmoid</button>
+                                <button class="button is-fullwidth is-danger is-outlined" style="margin: 2px 0px" id="softmax">softmax</button>
+                                <button class="button is-fullwidth is-info is-outlined" style="margin: 2px 0px" id="flatten">Flatten</button>
+                            </article>
+                            <article class="tile is-child notification" style="color: #FFF; padding: 15px 15px;">
+                                <div class="field">
+                                  <div class="control">
+                                    <input id="info_name" class="input is-primary" type="text" placeholder="레이어 이름">
+                                  </div>
+                                </div>
+                                <div class="field">
+                                  <div class="control">
+                                    <input id="info_unit" class="input is-info" type="text" placeholder="레이어 유닛수">
+                                  </div>
+                                </div>
+                                <div class="field">
+                                  <div class="control">
+                                    <input id="info_op1" class="input is-success" type="text" placeholder="옵션1">
+                                  </div>
+                                </div>
+                                <div class="field">
+                                  <div class="control">
+                                    <input id="info_op2" class="input is-warning" type="text" placeholder="옵션2">
+                                  </div>
+                                </div>
+                                <div class="field">
+                                  <div class="control">
+                                    <button id="layer_save" class="button is-info is-light">레이어 저장</button>
+                                    <button id="layer_delete" class="button is-danger is-light">레이어 삭제</button>
+                                  </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="popup" style="position: absolute; z-index: 99; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; opacity: 0">
+        <div style="bottom: 100px; width: 100%; position: absolute; padding: 0 80px;">
+            <div class="tile is-child box" style="width: 100%;">
+                <button class="button is-danger is-outlined" style="float: right;" onclick="popup_hide()">X</button>
+                <p class="title">2. XOR 문제해결</p>
+                <p id="content">XOR 문제를 해결해 봅시다. 1장에서 했던 퍼셉트론모델은 XOR 결과를 도출해 낼 수 없다는 단점이 있습니다. 즉 (0, 1), (1, 0) 의 입력값에 1이라 답하고 (1, 1), (0, 0) 의 입력값에 0이라 답하는게 불가능 했다는 이야기입니다.다.</p>
+            </div>
+        </div>
+    </section>
+</body>
+<script>
+    $("#model").height($(window).height()-330)
+
+    var array = new Array()
+    var seq = 0
+    var block_top = 500;
+    var select_layer = -1
+    
+    function select(s) {
+        
+        $("#model>.block").each(function(i){
+            if(s == $("#model>.block:nth-child("+(i+1)+")").children('.seq').text()){
+                
+                array.forEach(function(item){
+                    console.log(item.seq+' '+s)
+                    if(item.seq == s){
+                        $("#info_name").val(item.name);
+                        $("#info_unit").val(item.unit == undefined ? "" : item.unit);
+                        $("#info_op1").val(item.op1 == undefined ? "" : item.op1);
+                        $("#info_op2").val(item.op2 == undefined ? "" : item.op2);
+                    }
+                })
+            }
+        })
+    }
+    function layerpush() {
+        if($("#model>.block").length == 1){
+            $("#model>.block").css({top : (block_top - 60) + "px"})
+        }
+        else{
+            $("#model>.block").each(function(i){
+                $("#model>.block:nth-child("+(i+1)+")").css({top : (block_top - 60 * (i+1)) + "px"})
+            });
+        }
+    }
+    function layerload(s) {
+        $("#model>.block").each(function(i){
+            if(s == $("#model>.block:nth-child("+(i+1)+")").children('.seq').text()){
+                
+                array.forEach(function(item){
+                    if(item.seq == s){
+                        $("#model>.block:nth-child("+(i+1)+")>.diamond2").text(item.unit == undefined ? "" : item.unit);
+                    }
+                })
+            }
+        })
+    }
+    var layer = [
+        {
+            class : 'dense',
+            option : ['unit']
+        },
+        {
+            class : 'lstm',
+            option : ['unit']
+        },
+        {
+            class : 'conv2d',
+            option : ['unit']
+        },
+        {
+            class : 'maxpooling2d',
+            option : ['unit']
+        },
+        {
+            class : 'dropout',
+            option : ['drop']
+        },
+        {
+            class : 'embedding',
+            option : ['words']
+        },
+        {
+            class : 'relu',
+            option : []
+        },
+        {
+            class : 'tanh',
+            option : []
+        },
+        {
+            class : 'sigmoid',
+            option : []
+        },
+        {
+            class : 'softmax',
+            option : []
+        },
+        {
+            class : 'flatten',
+            option : []
+        }
+    ]
+    layer.forEach(function(e){
+        $("#"+e.class).click(function(){
+        
+            c = e.class
+            n = 'layer '+seq
+            array.unshift({
+                class : c,
+                name : n,
+                unit : (e.option.includes('unit') ? 16 : null),
+                seq : seq,
+            });
+            layerpush()
+            $("#model").prepend(`
+                <div class="`+e.class+` block">
+                    <div class="diamond1"><div></div></div>
+                    <div class="diamond2">`+(e.option.includes('unit') ? 16 : '')+`</div>
+                    <div class="diamond3">`+c+`</div>
+                    <div class="seq" style="display: none;">`+seq+`</div>
+                </div>
+            `)
+            select(n)
+            array.forEach(function(element, i){
+                $("#model>.block").click(function(){
+                      select_layer = $(this).children('.seq').text()
+                      select(select_layer)
+                })
+            })
+            seq+=1
+        });
+    })
+    
+    $("#layer_save").click(function(){
+        array.forEach(function(item, i){
+            if(item.seq == select_layer){
+                array[i].name = $("#info_name").val();
+                array[i].unit = $("#info_unit").val();
+                array[i].op1 = $("#info_op1").val();
+                array[i].op2 = $("#info_op2").val();
+            }
+        })
+        layerload(select_layer)
+    })
+    $("#layer_delete").click(function(){
+        
+    })
+    
+    $("#save").click(function(){
+        var text_data = ``;
+        text_data += $('#info_opti').val() + '\n'
+        text_data += $('#info_loss').val() + '\n'
+        text_data += $('#info_lr').val() + '\n'
+        text_data += $('#info_mom').val() + '\n'
+        text_data += $('#info_dec').val() + '\n'
+        
+        array.forEach(function(e){
+            text_data += e.class
+            if(e.unit != null){
+                text_data += ' '+e.unit
+            }
+            text_data += '\n'
+            
+        })
+        
+        console.log(text_data)
+    })
+    
+    $("#run").click(function(){
+        
+        // 시나리오 일떄
+        
+        
+        var text_data = ``;
+        text_data += 'MNIST\n';
+        array.reverse().forEach(function(e){
+            
+            if(on == 2){
+                if(array.length == 1){
+                    popup_show(content[1])
+                }else if(array.length > 1){
+                    popup_show(content[2])
+                }
+            }
+            
+            text_data += e.class
+            if(e.unit != null){
+                text_data += ' '+e.unit
+            }
+            text_data += '\n'
+            
+        })
+        copyToClipboard(text_data);
+        alert('클립보드에 복사되었습니다! 인공지능 다뤄보기에서 Query를 넣어보세요!');
+        console.log(text_data)
+    })
+    
+    function popup_show(str){
+        $('#popup').show()
+        $('#popup').animate({opacity: "1"}, 1000)
+        $("#content").text(str)
+    }
+    function popup_hide(){
+        $('#popup').animate({opacity: "0"}, 1000, function(){
+            $('#popup').hide()
+        })
+    }
+    
+    // 바꾸면 시나리오 모드
+    var on = 1
+    function si1(){
+        on = 2
+        popup_show(content[0])
+    }
+    
+    var content = [
+        'XOR 문제를 해결해 봅시다. 1장에서 했던 퍼셉트론 모델은 XOR 결과를 도출해 낼 수 없다는 단점이 있습니다. 즉 (0, 1), (1, 0) 의 입력값에 1이라 답하고 (1, 1), (0, 0) 의 입력값에 0이라 답하는게 불가능 했다는 이야기입니다.',
+        '이런! XOR 문제를 해결 할 수 없던 이유는 퍼셉트론 모델이 한개의 층을 가진 단순한 모델이였기 때문이예요! 다시 생각해 봅시다...!',
+        '대단해요..! Dense레이어를 2개 이상 쌓아 XOR 문제를 해결할 수 있게 되었어요! 실행을 눌러 결과를 보도록 합시다!'
+    ]
+
+    function copyToClipboard(text) {
+        var dummy = document.createElement("textarea");
+        // to avoid breaking orgain page when copying more words
+        // cant copy when adding below this code
+        // dummy.style.display = 'none'
+        document.body.appendChild(dummy);
+        //Be careful if you use texarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
+        dummy.value = text;
+        dummy.select();
+        document.execCommand("copy");
+        document.body.removeChild(dummy);
+    }
+</script>
+</html>

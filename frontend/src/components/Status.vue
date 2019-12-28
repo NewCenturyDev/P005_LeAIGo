@@ -1,7 +1,7 @@
 <template>
   <div class="status">
     <NavBar></NavBar>
-    <b-button :click="LoadAiStatusList">새로 고침</b-button>
+    <button @click="LoadAiStatusList">새로고침</button>
     <b-table striped hover :items="items"></b-table>
   </div>
 </template>
